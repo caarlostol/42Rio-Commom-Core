@@ -1,45 +1,89 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: chayashi <caarlostol@student.42.rio>       +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/03/11 15:44:49 by chayashi          #+#    #+#              #
-#    Updated: 2024/03/11 16:47:39 by chayashi         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
+# Compiler
 NAME = push_swap
-ARCHIVE = push_swap.a
-CC = cc
-CFLAGS = -Wall -Werror -Wextra  
-MAKE_LIB = ar -rcs
+CC = gcc
+RM = rm -f
+INCLUDE = -Iincludes -Ilib/ft_printf/includes -Ilib/libft/includes
+CFLAGS = -Wall -Wextra -Werror -ggdb -fsanitize=address
 
-SRCS = $(wildcard *.c)
-OBJS = $(SRCS:.c=.o)
+# Source files
+ALGO_DIR = algorithm
+STACK_DIR = stack
+MISC_DIR = misc
+BONUS = checker
+SRCS_DIR = srcs
+MAIN_FILES = main.c $(ALGO_DIR)/push_swap.c
+SRCS_FILES = $(ALGO_DIR)/sort_utils.c $(ALGO_DIR)/sort.c $(ALGO_DIR)/calculation.c $(STACK_DIR)/stack_utils.c $(STACK_DIR)/operations.c $(STACK_DIR)/misc_utils.c $(MISC_DIR)/check.c
+SRC_1 = $(addprefix $(SRCS_DIR)/,$(MAIN_FILES))
+SRC_2 = $(addprefix $(SRCS_DIR)/,$(SRCS_FILES))
+BONUS_SRC = srcs/checker.c
 
-all : $(NAME)
+# Object files
+OBJ_DIR = obj/
+OBJ_1 = ${SRC_1:.c=.o}
+OBJ_2 = ${SRC_2:.c=.o}
+BONUS_OBJ =${BONUS_SRC:.c=.o}
 
-$(NAME) : $(ARCHIVE)
-	$(CC) $< -o $@
+# Libraries
+LIBFT_DIR = lib/libft
+LIBFT = $(LIBFT_DIR)/libft.a
 
-$(ARCHIVE) : $(OBJS)
-	$(MAKE_LIB) $(ARCHIVE) $^
+PRINTF_DIR = lib/ft_printf
+PRINTF = $(PRINTF_DIR)/libftprintf.a
 
-%.o : %.c 
-	$(CC) $(CFLAGS) -c $< -o $@ 
+LIBS = -L$(LIBFT_DIR) -L$(PRINTF_DIR) -lft -lftprintf
 
-bonus : 
-	cd ../checker && make
-	
-clean :
-	rm -f $(OBJS) $(ARCHIVE)
+# Colors and text formatting
+RESET = \033[0m
+BOLD = \033[1m
+DIM = \033[2m
+UNDERLINE = \033[4m
+BLINK = \033[5m
+INVERT = \033[7m
+LIGHT_BLUE = \033[94m
+YELLOW = \033[93m
 
-fclean : clean
-	rm -f $(NAME)
-	cd ../checker && make fclean
+# Makefile rules
+# @${CC} -c $(CFLAGS) $(INCLUDE) $< -o ${<:.c=.o}
+.c.o:
+	@echo "$(BOLD)$(YELLOW)Compiling $<...$(RESET)"
+	@$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
-re : fclean all
+${NAME}: ${OBJ_1} ${OBJ_2} $(LIBFT) $(PRINTF)
+	@echo "$(BOLD)$(LIGHT_BLUE)Linking objects...$(RESET)"
+	@$(CC) $(CFLAGS) $(INCLUDES) ${OBJ_1} ${OBJ_2} $(LIBS) -o $(NAME)
+	@echo "$(BOLD)$(LIGHT_BLUE)$(NAME) created successfully!$(RESET)"
 
-.PHONY : all clean fclea re
+
+${BONUS}: ${OBJ_2} ${BONUS_OBJ} $(LIBFT) $(PRINTF)
+	@echo "$(BOLD)$(LIGHT_BLUE)Linking objects...$(RESET)"
+	@${CC} ${CFLAGS} ${BONUS_OBJ} ${OBJ_2} $(LIBS) -o ${BONUS} ${INCLUDE}
+	@echo "$(BOLD)$(LIGHT_BLUE)$(NAME) created successfully!$(RESET)"
+
+
+$(LIBFT):
+	@echo "$(BOLD)$(LIGHT_BLUE)Building libft...$(RESET)"
+	@make -C $(LIBFT_DIR) -s
+
+$(PRINTF):
+	@echo "$(BOLD)$(LIGHT_BLUE)Building ft_printf...$(RESET)"
+	@make -C $(PRINTF_DIR) -s
+
+all: ${NAME}
+
+bonus: ${BONUS} 
+
+clean:
+	@echo "$(BOLD)$(LIGHT_BLUE)Cleaning objects...$(RESET)"
+	@${RM} ${OBJ_1} ${OBJ_2} ${BONUS_OBJ} ${NAME} ${BONUS}
+	@make -C $(LIBFT_DIR) clean -s
+	@make -C $(PRINTF_DIR) clean -s
+
+fclean: clean
+	@echo "$(BOLD)$(LIGHT_BLUE)Cleaning $(NAME)...$(RESET)"
+	@${RM} ${OBJ_1} ${OBJ_2} ${BONUS_OBJ} ${NAME} ${BONUS}
+	@make -C $(LIBFT_DIR) fclean -s
+	@make -C $(PRINTF_DIR) fclean -s
+
+re: clean all
+
+.PHONY: all bonus clean fclean re bonus

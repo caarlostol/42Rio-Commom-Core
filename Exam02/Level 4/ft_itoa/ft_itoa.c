@@ -39,7 +39,8 @@ char *ft_itoa(int nbr)
 }
 int	main()
 {
-	int  a = "123456";
+	int  a = 123456;
 	char *str = ft_itoa(a);
 	printf("%s\n", str);
+	return (0);
 }
